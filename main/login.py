@@ -1,6 +1,6 @@
 import hashlib
 import json
-import jwt
+# import jwt
 from flask import Blueprint, jsonify, request
 from pymongo import MongoClient
 from datetime import datetime, timedelta
@@ -22,14 +22,24 @@ def log_in():
 
     result = db.users.find_one({"user_id": user_id, "password": password_hash})
 
-    if result is None:
-        return jsonify({'message' : '아이디 혹은 비밀번호가 옳지 않습니다.'}), 401
+    if (user_id == ""):
+        print("아이디를 입력해주세요.")
+        return jsonify({'message' : 'id none'})
+    elif (password == ""):
+        print("비밀번호를 입력해주세요.")
+        return jsonify({'message' : 'password none'})
+    elif result is None:
+        print("아이디 또는 비밀번호가 일치하지 않습니다.")
+        return jsonify({'message' : 'id and password is different'})
+    else:
+        payload = {
+            "id" : str(result["_id"]),
+            "exp" : datetime.utcnow() + timedelta(seconds=60*60*24)
+        }
 
-    payload = {
-        "id" : str(result["_id"]),
-        "exp" : datetime.utcnow() + timedelta(seconds=60*60*24)
-    }
+        # token 체크용, 없어도 무방
+        # token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')
 
-    token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')
-
-    return jsonify({'message': 'login', 'token': token})
+        print("로그인 완료")
+        return jsonify({'message' : 'success'})
+        # return jsonify({'message': 'success', 'token': token})
