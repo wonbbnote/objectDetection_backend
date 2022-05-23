@@ -47,12 +47,11 @@ def get_prediction(image_bytes):
 @blue_result.route('/result', methods=['GET'])
 def result():
     # 1. 폴더에 업로드된 파일을 불러와(최신파일?!)
-    
     filenames = os.listdir('main/static/img/')
     file = filenames[-1]
     file_path = f'main/static/img/{file}'
     
-    # 2. 
+    # 2. 모델에 적용
     # image = 'main/static/img/2022-05-23-09-46-11.png'
     output = get_prediction(file_path)
     print(output)
@@ -64,18 +63,8 @@ def result():
         # 파일 이름
         # 모델 결과값
     }
-    
+
     return jsonify({'msg': 'success', 'output': output})
-
-
-
-
-
-
-    
-
-
-
     
 
     

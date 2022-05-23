@@ -9,6 +9,7 @@ blue_index = Blueprint("index", __name__, url_prefix="/")
 
 @blue_index.route('/upload', methods=['POST'])
 def upload():
+    print(request.files)
     file = request.files['file_give']             # 파일 받기
     extension = file.filename.split('.')[-1]      # 확장자
     today = datetime.datetime.now()                        # 현재 날짜, 시간
