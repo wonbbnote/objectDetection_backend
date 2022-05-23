@@ -33,7 +33,7 @@ def get_prediction(image_bytes):
     transforms_test = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.ToTensor(),
-    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])#x
     ])
     image = transforms_test(image).unsqueeze(0).to(device)
     class_names = ['마동석', '이병헌', '김종국']
