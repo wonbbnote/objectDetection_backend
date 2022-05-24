@@ -6,8 +6,15 @@ import torch
 from torchvision import datasets, models, transforms
 from PIL import Image
 from torch import nn
+import jwt
 
 from flask import Blueprint, jsonify, request
+from pymongo import MongoClient
+
+client = MongoClient('localhost', 27017)
+db = client.dbobject
+
+SECRET_KEY = 'object'
 
 blue_result = Blueprint("result", __name__, url_prefix="/")
 
@@ -55,16 +62,26 @@ def result():
     # image = 'main/static/img/2022-05-23-09-46-11.png'
     output = get_prediction(file_path)
     print(output)
+    '''
+    token = request.headers.get("Authorization")
+    user = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+    db_user = db.users.find_one({'_id': ObjectId(user.get("id"))}) #?
 
     # 3. 결과값을 DB에 저장
     doc = {
-        # 유저아이디 토큰
         # 회원가입 시 유저 아이디
+        "user_id": db_user['id'],
         # 파일 이름
+        "filename": file_path,
         # 모델 결과값
+        "output": output
     }
+    db.result.insert_one(doc)
 
-    return jsonify({'msg': 'success', 'output': output})
+    '''
+    
+
+    return jsonify({'msg': 'success', 'output': output, 'file_path': file_path})
     
 
     
