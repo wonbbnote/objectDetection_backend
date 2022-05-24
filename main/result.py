@@ -75,7 +75,6 @@ def get_result():
     filenames = os.listdir('main/static/img/')
     file = filenames[-1]
     file_path = f'main/static/img/{file}'
-
     # 2. 모델에 적용
     # image = 'main/static/img/2022-05-23-09-46-11.png'
     output = get_prediction(file_path)
