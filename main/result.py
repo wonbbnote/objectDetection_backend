@@ -43,7 +43,7 @@ def get_prediction(image_bytes):
     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])#x
     ])
     image = transforms_test(image).unsqueeze(0).to(device)
-    class_names = ['마동석', '이병헌', '김종국']
+    class_names = ['유재석', '강호동', '신동엽', '박나래', '장도연','주현영']
     with torch.no_grad():
         outputs = model(image)
         _, preds = torch.max(outputs, 1)
@@ -54,13 +54,15 @@ def get_prediction(image_bytes):
 @blue_result.route('/result', methods=['GET'])
 def result():
     # 1. 폴더에 업로드된 파일을 불러와(최신파일?!)
-    filenames = os.listdir('main/static/img/')
+    filenames = os.listdir('C:/Users/USER/OneDrive/바탕 화면/p1_front/static/img/')
+    print(filenames)
     file = filenames[-1]
-    file_path = f'main/static/img/{file}'
+    abs_path = f'C:/Users/USER/OneDrive/바탕 화면/p1_front/static/img/{file}'
+    file_path = f'/static/img/{file}'
     
     # 2. 모델에 적용
     # image = 'main/static/img/2022-05-23-09-46-11.png'
-    output = get_prediction(file_path)
+    output = get_prediction(abs_path)
     print(output)
     '''
     token = request.headers.get("Authorization")
@@ -79,8 +81,6 @@ def result():
     db.result.insert_one(doc)
 
     '''
-    
-
     return jsonify({'msg': 'success', 'output': output, 'file_path': file_path})
     
 
