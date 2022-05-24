@@ -4,16 +4,19 @@ from flask import Flask
 from flask_cors import CORS
 from flask import Blueprint, jsonify, request
 import torch
-# from . import signup
-# from . import login
+#수정
+from . import signup
+from . import login
+#수정
 from . import index
 from . import result
 
 app = Flask(__name__)
 cors = CORS(app, resources={r"*": {"origins": "*"}})
 
-
-# app.register_blueprint(signup.blue_signup)
-# app.register_blueprint(login.blue_login)
+#수정
+app.register_blueprint(signup.blue_signup)
+app.register_blueprint(login.blue_login)
+#수정
 app.register_blueprint(index.blue_index)
 app.register_blueprint(result.blue_result)

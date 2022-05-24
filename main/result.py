@@ -1,13 +1,23 @@
+from functools import wraps
 import io
+import json
 import os
+from bson import ObjectId
 from matplotlib.pyplot import imshow
 import numpy as np
 import torch
 from torchvision import datasets, models, transforms
 from PIL import Image
 from torch import nn
+import jwt
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, abort, jsonify, request
+from pymongo import MongoClient
+
+client = MongoClient('localhost', 27017)
+db = client.dbobject
+
+SECRET_KEY = 'object'
 
 blue_result = Blueprint("result", __name__, url_prefix="/")
 
@@ -23,11 +33,22 @@ model.load_state_dict(checkpoint)
 # model.load_state_dict(torch.load('main/static/model/model.pth', map_location=torch.device('cpu')))
 # model = torch.load('main/static/model/model.pth', map_location=torch.device('cpu'))
 
-client = MongoClient('localhost', 27017)
-
-db = client.dbobject
-
 model.eval()
+
+def authorize(f):
+    @wraps(f)
+    def decorated_function():
+        if not 'Authorization' in request.headers:
+            abort(401)
+        token = request.headers['Authorization']
+        try:
+            user = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+        except:
+            abort(401)
+        return f(user)
+
+    return decorated_function
+
 
 # 이미지를 읽어 결과를 반환하는 함수
 def get_prediction(image_bytes):
@@ -37,7 +58,7 @@ def get_prediction(image_bytes):
     transforms_test = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.ToTensor(),
-    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])#x
     ])
     image = transforms_test(image).unsqueeze(0).to(device)
     class_names = ['마동석', '이병헌', '김종국']
@@ -49,28 +70,42 @@ def get_prediction(image_bytes):
     return class_names[preds[0]]
 
 @blue_result.route('/result', methods=['GET'])
-def result():
+def get_result():
     # 1. 폴더에 업로드된 파일을 불러와(최신파일?!)
     filenames = os.listdir('main/static/img/')
     file = filenames[-1]
     file_path = f'main/static/img/{file}'
-    
+
     # 2. 모델에 적용
     # image = 'main/static/img/2022-05-23-09-46-11.png'
     output = get_prediction(file_path)
     print(output)
 
+    return jsonify({'msg': 'success', 'output': output, 'file_path': file_path})
+
+
+@blue_result.route('/result', methods=['POST'])
+@authorize
+def post_result(user):
+    filenames = os.listdir('main/static/img/')
+    file = filenames[-1]
+    file_path = f'main/static/img/{file}'
+
+    output = get_prediction(file_path)
+
+    # token = request.headers.get("Authorization")
+    # user = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+    db_user = db.users.find_one({'_id': ObjectId(user.get("id"))}) #?
+
     # 3. 결과값을 DB에 저장
     doc = {
-        # 유저아이디 토큰
         # 회원가입 시 유저 아이디
+        "user_id": db_user['user_id'],
         # 파일 이름
-        'file_path' : data['user_id'],
+        "filename": file_path,
         # 모델 결과값
+        "output": output
     }
-    db.users.insert_one(doc)
+    db.result.insert_one(doc)
 
-    return jsonify({'msg': 'success', 'output': output})
-    
-
-    
+    return jsonify({'message' : 'success'})
