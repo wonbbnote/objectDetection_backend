@@ -17,11 +17,9 @@ def upload():
     filename = f'{mytime}.{extension}'  # 파일 이름
     save_to = f'/static/img/{filename}' # 파일 경로
     # test = os.path.abspath(__file__)    # 절대경로
-    # parent_path = Path(test).parent     # ?
-    #print("parent:", parent_path)
-    #abs_path = str(parent_path) + save_to 
-    #print("abs_path:",abs_path)
+
+    # (1)프론트엔드 폴더로 절대경로 수정!!!!!
     abs_path = "C:/Users/USER/OneDrive/바탕 화면/p1_front" + save_to
-    # C:\Users\USER\OneDrive\바탕 화면\p1_front\static\img
+    
     file.save(abs_path)                 # 파일 저장
     return jsonify({'result': 'success'})
